@@ -1,4 +1,8 @@
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, url_for, flash, redirect
+from .models import User
+from . import db
+# from werkzeug import generate_password_hash, check_password_hash 
+# used to hash password and check hashed password ^
 
 auth = Blueprint('auth', __name__)
 
@@ -16,13 +20,19 @@ def logout():
 def signup():
     if request.method == 'POST':
         email = request.form.get("email")
-        firstname = request.form.get("firstname")
+        firstName = request.form.get("firstName")
         # lastname = request.form.get("lastname")
         password1 = request.form.get("password1")
         password2 = request.form.get("password2")
 
         if password1 != password2:
             flash("Password dont match.", category="error")
-        elif len(password1) < 8:
+        elif len(password1) < 7:
             flash("Password must be 8 characters.", category="error")
+        else:
+            new_user = User(email=email, firstName=firstName, password=password1)
+            db.session.add(new_user)
+            db.session.commit()
+            flash("Account created!", category='success')
+            redirect(url_for("views.home"))
     return render_template("signup.html")
