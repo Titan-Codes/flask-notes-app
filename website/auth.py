@@ -14,7 +14,20 @@ def login():
 
 @auth.route("/logout")
 def logout():
-    return "Logged out"
+    if request.method == 'POST':
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            if user.password == password:
+                flash("Logged in successfully!", category="success")
+            else:
+                flash("Incorrect password, try again.", category="error")
+        else:
+            flash("Email does not exist.", category="error")
+            # return redirect(url_for("views.signup"))
+    return redirect(url_for("views.home"))
 
 @auth.route("/signup", methods=['GET', 'POST'])
 def signup():
@@ -25,7 +38,10 @@ def signup():
         password1 = request.form.get("password1")
         password2 = request.form.get("password2")
 
-        if password1 != password2:
+        user = User.query.filter_by(email=email).first()
+        if user:
+            flash("Email already exists.", category="error")
+        elif password1 != password2:
             flash("Password dont match.", category="error")
         elif len(password1) < 7:
             flash("Password must be 8 characters.", category="error")
